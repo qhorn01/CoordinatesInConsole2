@@ -1,108 +1,92 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-bool programStart = true;
 
-while (programStart == true)
+MainLoop();
+
+static void MainLoop()
 {
-    string rowChar = "[]";
-
-    Console.WriteLine("How many rows do you want?");
-    string rowInput = Console.ReadLine();
-    int numRows = Int32.Parse(rowInput);
-
-    Console.WriteLine("How many columns do you want?");
-    string columnInput = Console.ReadLine();
-    int numColumn = Int32.Parse(columnInput);
-
-    string wholeGrid = rowColumnCreation(numRows, numColumn, rowChar);
-    Console.WriteLine(wholeGrid);
-
-    Console.WriteLine("1. Place coordinate\n2. Startover\n3.Exit");
-    string userInput = Console.ReadLine();
-    int userInputInt = Int32.Parse(userInput);
-
-    bool optionSelection = true;
-
-    while (optionSelection == true)
+    while (true)
     {
-        if (userInputInt == 1)
-        {
-
-            Console.WriteLine($"What row do you want the coordinate placed? Enter 1 - {numRows}: ");
-            string rowSelect = Console.ReadLine();
-            int rowSelectInt = Int32.Parse(rowSelect);
-
-            Console.WriteLine($"What column do you want the coordinate placed? Enter 1 - {numColumn}: ");
-            string columnSelect = Console.ReadLine();
-            int columnSelectInt = Int32.Parse(rowSelect);
-
-            if (rowSelectInt > numRows)
-            {
-                Console.WriteLine($"Please type in a number less than or equal to {numRows}");
-            }
-            else if (rowSelectInt <= numRows)
-            {
-                string coGrid = coordinatePlacement(rowSelectInt, columnSelectInt, numRows, numColumn, rowChar);
-                string secondHalf = wholeGrid.Substring(rowSelectInt*2, wholeGrid.Length-rowSelectInt*2);
-                Console.WriteLine(coGrid + secondHalf);
-            }
-            else
-            {
-
-            }
-        }
+        int numRows = GetIntWithPrompt("How many rows do you want?", 1, int.MaxValue);
+        int numColumns = GetIntWithPrompt("How many columns do you want?", 1, int.MaxValue);
+        string[,] grid = CreateGrid(numRows, numColumns);
+        GridInteractionLoop(grid);
     }
-
 }
-    static string rowColumnCreation(int numRows, int numColumn, string rowChar)
-    {
-        string rowOutput = "";
 
-        for (int i = 0; i < numRows; i++)
-        {
-            rowOutput += rowChar;
-        }
-
-        string columnOutput = rowOutput;
-
-        if (numColumn > 1)
-        {
-            for (int i = 0; i < numColumn - 1; i++)
-            {
-                rowOutput += $"\n{columnOutput}";
-            }
-        }
-
-        return rowOutput;
-    }
-
-static string coordinatePlacement(int rowPlacement, int columnPlacement, int numRows, int numColumn, string rowChar)
+static void GridInteractionLoop(string[,] grid)
 {
-    string rowOutput = "";
-    string coordinate = "()";
-
-        for (int i = 0; i < rowPlacement-1; i++)
+    while (true)
+    {
+        Console.Clear();
+        PrintGrid(grid);
+        Console.WriteLine("\n1. Place coordinate\n2. Start over\n3. Exit");
+        int choice = GetIntWithPrompt("Select an option: ", 1, 3);
+        if (choice == 1)
         {
-            rowOutput += rowChar;
+            PlaceCoordinate(grid);
         }
-        rowOutput += coordinate;
-
-        /*for (int i = 0; i < numRows; i++)
+        else if (choice == 2)
         {
-            rowOutput += rowChar;
+            break; // Start over
         }
-        
-        string columnOutput = rowOutput;
-
-        if (numColumn > 1)
+        else if (choice == 3)
         {
-            for (int i = 0; i < columnPlacement - 1; i++)
-            {
-                rowOutput += $"\n{columnOutput}";
-            }
+            Environment.Exit(0);
         }
+    }
+}
 
-        rowOutput += coordinate;*/
+static void PlaceCoordinate(string[,] grid)
+{
+    int numRows = grid.GetLength(0);
+    int numColumns = grid.GetLength(1);
+    int row = GetIntWithPrompt($"Enter row (1 - {numRows}): ", 1, numRows) - 1;
+    int col = GetIntWithPrompt($"Enter column (1 - {numColumns}): ", 1, numColumns) - 1;
+    if (grid[row, col] == "()")
+    {
+        Console.WriteLine("A coordinate is already placed here. Press Enter to continue.");
+        Console.ReadLine();
+    }
+    else
+    {
+        grid[row, col] = "()";
+    }
+}
 
-        return rowOutput;
+static string[,] CreateGrid(int rows, int cols)
+{
+    string[,] grid = new string[rows, cols];
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            grid[r, c] = "[]";
+    return grid;
+}
+
+static void PrintGrid(string[,] grid)
+{
+    int rows = grid.GetLength(0);
+    int cols = grid.GetLength(1);
+    for (int r = 0; r < rows; r++)
+    {
+        for (int c = 0; c < cols; c++)
+        {
+            Console.Write(grid[r, c]);
+        }
+        Console.WriteLine();
+    }
+}
+
+
+static int GetIntWithPrompt(string prompt, int min, int max)
+{
+    int value;
+    while (true)
+    {
+        Console.Write(prompt);
+        string? input = Console.ReadLine();
+        if (int.TryParse(input, out value) && value >= min && value <= max)
+            return value;
+        Console.WriteLine($"Please enter a number between {min} and {max}.");
+    }
 }
