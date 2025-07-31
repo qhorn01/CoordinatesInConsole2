@@ -1,108 +1,105 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-bool programStart = true;
+MainLoop();
 
-while (programStart == true)
+static void MainLoop()
 {
-    string rowChar = "[]";
-
-    Console.WriteLine("How many rows do you want?");
-    string rowInput = Console.ReadLine();
-    int numRows = Int32.Parse(rowInput);
-
-    Console.WriteLine("How many columns do you want?");
-    string columnInput = Console.ReadLine();
-    int numColumn = Int32.Parse(columnInput);
-
-    string wholeGrid = rowColumnCreation(numRows, numColumn, rowChar);
-    Console.WriteLine(wholeGrid);
-
-    Console.WriteLine("1. Place coordinate\n2. Startover\n3.Exit");
-    string userInput = Console.ReadLine();
-    int userInputInt = Int32.Parse(userInput);
-
-    bool optionSelection = true;
-
-    while (optionSelection == true)
+    while (true)
     {
-        if (userInputInt == 1)
+        int numRows = GetPositiveInt("How many rows do you want?");
+        int numColumns = GetPositiveInt("How many columns do you want?");
+        string[,] grid = CreateGrid(numRows, numColumns);
+
+        while (true)
         {
-
-            Console.WriteLine($"What row do you want the coordinate placed? Enter 1 - {numRows}: ");
-            string rowSelect = Console.ReadLine();
-            int rowSelectInt = Int32.Parse(rowSelect);
-
-            Console.WriteLine($"What column do you want the coordinate placed? Enter 1 - {numColumn}: ");
-            string columnSelect = Console.ReadLine();
-            int columnSelectInt = Int32.Parse(rowSelect);
-
-            if (rowSelectInt > numRows)
+            Console.Clear();
+            PrintGrid(grid);
+            Console.WriteLine("\n1. Place coordinate\n2. Start over\n3. Exit");
+            int choice = GetMenuChoice(1, 3);
+            if (choice == 1)
             {
-                Console.WriteLine($"Please type in a number less than or equal to {numRows}");
+                int row = GetCoordinate("row", numRows);
+                int col = GetCoordinate("column", numColumns);
+                if (grid[row, col] == "()")
+                {
+                    Console.WriteLine("A coordinate is already placed here. Press Enter to continue.");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    grid[row, col] = "()";
+                }
             }
-            else if (rowSelectInt <= numRows)
+            else if (choice == 2)
             {
-                string coGrid = coordinatePlacement(rowSelectInt, columnSelectInt, numRows, numColumn, rowChar);
-                string secondHalf = wholeGrid.Substring(rowSelectInt*2, wholeGrid.Length-rowSelectInt*2);
-                Console.WriteLine(coGrid + secondHalf);
+                break; // Start over
             }
-            else
+            else if (choice == 3)
             {
-
+                Environment.Exit(0);
             }
         }
     }
-
 }
-    static string rowColumnCreation(int numRows, int numColumn, string rowChar)
-    {
-        string rowOutput = "";
 
-        for (int i = 0; i < numRows; i++)
-        {
-            rowOutput += rowChar;
-        }
-
-        string columnOutput = rowOutput;
-
-        if (numColumn > 1)
-        {
-            for (int i = 0; i < numColumn - 1; i++)
-            {
-                rowOutput += $"\n{columnOutput}";
-            }
-        }
-
-        return rowOutput;
-    }
-
-static string coordinatePlacement(int rowPlacement, int columnPlacement, int numRows, int numColumn, string rowChar)
+static string[,] CreateGrid(int rows, int cols)
 {
-    string rowOutput = "";
-    string coordinate = "()";
+    string[,] grid = new string[rows, cols];
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            grid[r, c] = "[]";
+    return grid;
+}
 
-        for (int i = 0; i < rowPlacement-1; i++)
+static void PrintGrid(string[,] grid)
+{
+    int rows = grid.GetLength(0);
+    int cols = grid.GetLength(1);
+    for (int r = 0; r < rows; r++)
+    {
+        for (int c = 0; c < cols; c++)
         {
-            rowOutput += rowChar;
+            Console.Write(grid[r, c]);
         }
-        rowOutput += coordinate;
+        Console.WriteLine();
+    }
+}
 
-        /*for (int i = 0; i < numRows; i++)
-        {
-            rowOutput += rowChar;
-        }
-        
-        string columnOutput = rowOutput;
+static int GetPositiveInt(string prompt)
+{
+    int value;
+    while (true)
+    {
+        Console.WriteLine(prompt);
+        string input = Console.ReadLine();
+        if (int.TryParse(input, out value) && value > 0)
+            return value;
+        Console.WriteLine("Please enter a positive integer.");
+    }
+}
 
-        if (numColumn > 1)
-        {
-            for (int i = 0; i < columnPlacement - 1; i++)
-            {
-                rowOutput += $"\n{columnOutput}";
-            }
-        }
+static int GetMenuChoice(int min, int max)
+{
+    int value;
+    while (true)
+    {
+        Console.Write("Select an option: ");
+        string input = Console.ReadLine();
+        if (int.TryParse(input, out value) && value >= min && value <= max)
+            return value;
+        Console.WriteLine($"Please enter a number between {min} and {max}.");
+    }
+}
 
-        rowOutput += coordinate;*/
-
-        return rowOutput;
+static int GetCoordinate(string name, int max)
+{
+    int value;
+    while (true)
+    {
+        Console.Write($"Enter {name} (1 - {max}): ");
+        string input = Console.ReadLine();
+        if (int.TryParse(input, out value) && value >= 1 && value <= max)
+            return value - 1; // zero-based
+        Console.WriteLine($"Please enter a valid {name} number between 1 and {max}.");
+    }
 }
